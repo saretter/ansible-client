@@ -1,0 +1,5 @@
+#!/bin/bash
+export RESTIC_PASSWORD="{{ RESTIC_PASSWORD }}"
+export RESTIC_REPOSITORY="{{ RESTIC_REPOSITORY }}"
+
+restic -r {{ restic_repository }} backup {{ backup_directory }} #backup_directory can contain multiple locations separated by space

@@ -1,0 +1,50 @@
+# file roles/rsnapshot/tasks/main.yml
+
+- name: Install the 'rsnapshot' package
+  apt:
+    name: rsnapshot
+    state: present
+
+- name: Configure rsnapshot
+  template:
+    src: rsnapshot.conf.j2
+    dest: /etc/rsnapshot.conf
+    mode: 0644
+
+- name: cron.d rsnapshot configuration hourly
+  cron:
+    name: rsnapshot hourly
+    minute: 0
+    hour: 5,21
+    user: root
+    job: "/usr/bin/rsnapshot sync && /usr/bin/rsnapshot hourly"
+    cron_file: rsnapshot
+
+- name: cron.d rsnapshot configuration daily
+  cron:
+    name: rsnapshot daily
+    minute: 30
+    hour: 2
+    user: root
+    job: "/usr/bin/rsnapshot daily"
+    cron_file: rsnapshot
+
+- name: cron.d rsnapshot configuration weekly
+  cron:
+    name: rsnapshot weekly
+    minute: 0
+    hour: 3
+    weekday: 1
+    user: root
+    job: "/usr/bin/rsnapshot weekly"
+    cron_file: rsnapshot
+
+- name: cron.d rsnapshot configuration monthly
+  cron:
+    name: rsnapshot monthly
+    minute: 0
+    hour: 3
+    day: 1
+    user: root
+    job: "/usr/bin/rsnapshot monthly"
+    cron_file: rsnapshot

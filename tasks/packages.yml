@@ -1,0 +1,27 @@
+- name: Add ppa 
+  apt_repository:
+    repo: "{{ item }}"
+    codename: bionic
+    update_cache: true
+    state: present
+  loop:
+    - ppa:unit193/encryption
+
+- name: Install packages
+  apt: 
+    name: "{{packages}}"
+  vars:
+    packages:
+    - rsync
+    - keepassxc
+    - nfs-kernel-server
+    - nfs-common
+    - davfs2
+    - ca-certificates
+    - veracrypt
+    - thunderbird
+    - enigmail
+    - scdaemon
+    - restic
+    - inkscape
+    - nextcloud-desktop

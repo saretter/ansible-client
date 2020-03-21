@@ -1,0 +1,11 @@
+- name: Copy user.js provided by privacy-handbuch.de to /tmp
+  copy:
+    src: templates/user.js
+    dest: /tmp 
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: 0644
+
+- name: Copy user.js to thunderbird default-profile
+  shell: cp /tmp/user.js /home/{{ user }}/.thunderbird/*.default/
+   

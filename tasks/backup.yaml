@@ -1,0 +1,101 @@
+
+---
+- name: Download client binary
+  get_url:
+    url: '{{ restic_url }}'
+    dest: '{{ restic_download_path }}/restic.bz2'
+    force: true
+  register: get_url_restic
+
+- name: Decompress the binary
+  shell: "bzip2 -dc {{ get_url_restic.dest }} > {{ restic_bin_bath }}"
+  args:
+    creates: '{{ restic_download_path }}/bin/restic-{{ restic_version }}'
+
+- name: Ensure permissions are correct
+  file:
+    path: '{{ restic_download_path }}/bin/restic-{{ restic_version }}'
+    mode: '0755'
+    owner: '{{ restic_dir_owner }}'
+    group: '{{ restic_dir_group }}'
+
+- name: Create symbolic link to the correct version
+  file:
+    src: '{{ restic_download_path }}/bin/restic-{{ restic_version }}'
+    path: '{{ restic_install_path }}/restic'
+    state: link
+    force: true
+
+
+- name: Initialize repository
+  command: '{{ restic_install_path }}/restic init'
+  environment:
+    RESTIC_REPOSITORY: '{{ item.value.location }}'
+    RESTIC_PASSWORD: '{{ item.value.password }}'
+  no_log: true
+  register: restic_init
+  changed_when: "'created restic repository' in restic_init.stdout"
+  failed_when:
+    - restic_init.rc != 0
+    - not 'config file already exists' in restic_init.stderr
+  loop: "{{ restic_repos|dict2items }}"
+  when:
+    - item.value.init is defined
+    - item.value.init
+
+
+ - name: Create backup credentials
+  template:
+    src: restic_access_Linux.j2
+    dest: '{{ restic_script_dir }}/access-{{ item.name }}.sh'
+    mode: '0700'
+    owner: '{{ restic_dir_owner }}'
+    group: '{{ restic_dir_group }}'
+  no_log: true
+  with_items: '{{ restic_backups }}'
+  when:
+    - item.name is defined
+    - item.src is defined or item.stdin is defined
+    - item.src is defined or item.stdin and item.stdin_cmd is defined
+    - item.repo in restic_repos
+
+- name: Create backup script
+  template:
+    src: restic_script_Linux.j2
+    dest: '{{ restic_script_dir }}/backup-{{ item.name }}.sh'
+    mode: '0700'
+    owner: '{{ restic_dir_owner }}'
+    group: '{{ restic_dir_group }}'
+  no_log: true
+  with_items: '{{ restic_backups }}'
+  when:
+    - item.name is defined
+    - item.src is defined or item.stdin is defined
+    - item.src is defined or item.stdin and item.stdin_cmd is defined
+    - item.repo in restic_repos
+
+- name: Setup CRON jobs
+  cron:
+    name: 'arillso.restic backup {{ item.name }}'
+    job: 'CRON=true {{ restic_script_dir }}/backup-{{ item.name }}.sh'
+    minute: '{{ schedule_minute | default("*") }}'
+    hour: '{{ schedule_hour | default("*") }}'
+    weekday: '{{ schedule_weekday | default("*") }}'
+    month: '{{ schedule_month | default("*") }}'
+    state: present
+  become: true
+  no_log: true
+  when:
+    - restic_create_cron
+    - item.name is defined
+    - item.scheduled
+  with_items: '{{ restic_backups }}'   
+
+
+#  https://github.com/arillso/ansible.restic
+
+#1. create ssh-repo or local-repo
+#2. copy script to ~/.backup make sure chmod 700 folder 600
+#3. create cron-job to backup every 4 hours
+
+#https://thomas-leister.de/restic-hetzner-storagebox/
