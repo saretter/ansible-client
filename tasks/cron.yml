@@ -1,2 +1,2 @@
 - name: install cron job (ansible-pull)
-  cron: user="ansible" name="ansible provision" minute="*/10" job="/usr/bin/ansible-pull -o -U https://github.com/sarette/ansible-client.git > /dev/null"
+  cron: user="ansible" name="ansible provision" minute="*/10" job="/usr/bin/ansible-pull -o -U https://github.com/saretter/ansible-client.git -i localhost local.yml --extra-vars="user={{ user }}" > /dev/null"

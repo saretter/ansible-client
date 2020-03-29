@@ -1,0 +1,9 @@
+- name: Install gnome-shell-extension-installer
+  shell: |
+    wget -O gnome-shell-extension-installer "https://github.com/brunelli/gnome-shell-extension-installer/raw/master/gnome-shell-extension-installer"
+    chmod +x gnome-shell-extension-installer
+    mv gnome-shell-extension-installer /usr/bin
+    gnome-shell-extension-installer 19 --yes # user-themes
+    gnome-shell-extension-installer 779 --yes #clipboard-indicator
+    gnome-shell-extension-installer 1139 --yes # apt-update-indicator
+    gnome-shell-extension-installer 750 --yes # openweather
