@@ -13,4 +13,4 @@
     - include: tasks/packages.yml
     - include: tasks/configure_tb.yml
     - include: tasks/sudoers.yml
-    - include: tasks/gnome-shell-extensions.yml
+    - include: tasks/ufw.yml

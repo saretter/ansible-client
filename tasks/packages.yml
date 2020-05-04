@@ -1,4 +1,11 @@
-- name: Add ppa 
+- name: add nginx apt-key
+  apt_key: 
+    url: "{{ item }}"
+    state: present 
+  loop:
+    - https://download.opensuse.org/repositories/home:ungoogled_chromium/Debian_Buster/Release.key
+
+- name: Add repos 
   apt_repository:
     repo: "{{ item }}"
     codename: bionic
@@ -6,6 +13,7 @@
     state: present
   loop:
     - ppa:unit193/encryption
+    - deb http://download.opensuse.org/repositories/home:/ungoogled_chromium/Debian_Buster/ /
 
 - name: Install packages
   apt: 
@@ -25,6 +33,6 @@
     - restic
     - inkscape
     - nextcloud-desktop
-    - arc-theme
-    - gnome-tweak-tool
     - filezilla
+    - ungoogled-chromium
+    - chromium-sandbox
